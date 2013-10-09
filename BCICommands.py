@@ -15,11 +15,11 @@ WALK_STEP_SIZE = 10
 TURN_TIME = 3
 TURN_STEP_SIZE = 0
 
-END_PROGRAM_CHAR = '0'
+END_PROGRAM_VAL = 0
 
 programRunning = False
 #serverAddr = '172.17.101.2' # Address of the machine sending commands
-serverAddr = '192..168.123.2' # Address of the machine sending commands
+serverAddr = '192.168.123.104' # Address of the machine sending commands
 serverPort = 60000
 
 socketConnected = False
@@ -38,12 +38,12 @@ def SetupConnection(sock=None):
     if sock == None:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     
-    sock.setblocking(0) # Do not block while reading socket data
+    sock.setblocking(0)
     
     try:
         sock.connect((serverAddr,serverPort))
         socketConnected = True
-    except ConnectionRefusedError:
+    except socket.error:
         socketConnected = False
         print('ERROR: Socket connection refused')
         
@@ -112,8 +112,8 @@ if initialized:
     tmp = raw_input('continue: ')
     
     # Connect to the socket
-    sockInfo = SetupConnection()
-    sock = sockInfo['sock']
+    socketInfo = SetupConnection()
+    sock = socketInfo['sock']
     socketConnected = socketInfo['socketConnected']
     
     if socketConnected:
@@ -122,22 +122,24 @@ if initialized:
     
         # Wait for command before moving
         while programRunning:
-            cmd = ReadData(sock, 1, '<c')
-            print('Received character ' + cmd)
-            if data == END_PROGRAM_CHAR:
+            cmd = ReadData(sock, 2, '<h')
+            if cmd == None:
+                pass
+            else:
+                print('Received command ' + str(cmd))
+            if cmd == END_PROGRAM_VAL:
                 programRunning = False
                 break
             # Numbers are in the same order as the commands for the BCI (RH, LH, LF, RF)
-            elif data == '1':
+            elif cmd == 1:
                 TurnRight(controller)
-            elif data == '2':
+            elif cmd == 2:
                 TurnLeft(controller)
-            elif data == '3':
+            elif cmd == 3:
                 MoveForward(controller)
-            elif data == '4':
+            elif cmd == 4:
                 MoveBackward(controller)
-            else:
-                print('Incorrect character received')
+
     time.sleep(1)
     
     controller.initActionEditor()
