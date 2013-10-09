@@ -3,6 +3,7 @@ from __future__ import print_function, division
 import time
 import sys
 import socket
+import struct
 
 sys.path.append('../MotionController') 
 
@@ -17,7 +18,8 @@ TURN_STEP_SIZE = 0
 END_PROGRAM_CHAR = '0'
 
 programRunning = False
-serverAddr = '172.17.101.2' # Address of the machine sending commands
+#serverAddr = '172.17.101.2' # Address of the machine sending commands
+serverAddr = '192..168.123.2' # Address of the machine sending commands
 serverPort = 60000
 
 socketConnected = False
