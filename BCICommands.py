@@ -1,8 +1,8 @@
 from __future__ import print_function, division
 
 import time
-
 import sys
+import socket
 
 sys.path.append('../MotionController') 
 
@@ -14,6 +14,69 @@ WALK_STEP_SIZE = 10
 TURN_TIME = 3
 TURN_STEP_SIZE = 0
 
+END_PROGRAM_CHAR = '0'
+
+programRunning = False
+serverAddr = '172.17.101.2' # Address of the machine sending commands
+serverPort = 60000
+
+socketConnected = False
+
+def SetupConnection(sock=None):
+    """ 
+    Set up TCP/IP communication
+    
+    INPUT:
+        sock    - Socket object for TCP/IP communication (default None)
+        
+    OUTPUT:
+        sock    - Socket object for TCP/IP communication 
+        socketConnected - Whether the socket was successfully connected (boolean)
+    """
+    if sock == None:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+    
+    sock.setblocking(0) # Do not block while reading socket data
+    
+    try:
+        sock.connect((serverAddr,serverPort))
+        socketConnected = True
+    except ConnectionRefusedError:
+        socketConnected = False
+        print('ERROR: Socket connection refused')
+        
+    return dict(sock=sock, socketConnected=socketConnected)
+        
+def ReadData(sock, numBytes, fmt='-'):
+    """ 
+    Read and return data from TCP-IP and log it as debug info 
+    
+    INPUT:
+        sock - socket to receive dataChunkFolder
+        fmt - unpack format or '-' for do not unpack
+    OUTPUT:
+        buff - Unconverted received buffer
+        data - Converted data (None if unpack failed)
+    """
+    
+    data = None
+    
+    try:
+        buff = sock.recv(numBytes)
+    except socket.timeout:
+        buff = None
+        data = None
+        
+    if fmt == '-': # Do not unpack if format is '-'
+        data = buff
+    elif buff is not None: # Only unpack if format is not '-' and buffer read successfully
+        if len(buff) == numBytes: # If not enough data was read, do not try to unpack
+            try:
+                data = struct.unpack_from(fmt, buff)[0]
+            except:
+                data = None
+    return data
+        
 def MoveForward(controller):
     "Walk forward one tile length"
     controller.walk(WALK_FORWARD_TIME, 0, WALK_STEP_SIZE)
@@ -46,30 +109,33 @@ if initialized:
     controller.initWalking()
     tmp = raw_input('continue: ')
     
-    for i in range(5):
-        MoveForward(controller)
-        time.sleep(1)
-     
-    tmp = raw_input('continue: ') 
-     
-    for i in range(5):
-        MoveBackward(controller)
-        time.sleep(1)
+    # Connect to the socket
+    sockInfo = SetupConnection()
+    sock = sockInfo['sock']
+    socketConnected = socketInfo['socketConnected']
     
-    #MoveForward(controller)
+    if socketConnected:
+        print('Socket Connected')
+        programRunning = True
     
-    #tmp = raw_input('continue: ')
-    
-    #MoveBackward(controller)
-    
-    #tmp = raw_input('continue: ')
-    
-    #TurnRight(controller)
-    
-    #tmp = raw_input('continue: ')
-    
-    #TurnLeft(controller)
-    
+        # Wait for command before moving
+        while programRunning:
+            cmd = ReadData(sock, 1, '<c')
+            print('Received character ' + cmd)
+            if data == END_PROGRAM_CHAR:
+                programRunning = False
+                break
+            # Numbers are in the same order as the commands for the BCI (RH, LH, LF, RF)
+            elif data == '1':
+                TurnRight(controller)
+            elif data == '2':
+                TurnLeft(controller)
+            elif data == '3':
+                MoveForward(controller)
+            elif data == '4':
+                MoveBackward(controller)
+            else:
+                print('Incorrect character received')
     time.sleep(1)
     
     controller.initActionEditor()
