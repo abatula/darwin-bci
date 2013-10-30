@@ -19,7 +19,7 @@ END_PROGRAM_VAL = 0
 
 programRunning = False
 #serverAddr = '172.17.101.2' # Address of the machine sending commands
-serverAddr = '192.168.123.104' # Address of the machine sending commands
+serverAddr = '192.168.123.105' # Address of the machine sending commands
 serverPort = 60000
 
 socketConnected = False
@@ -37,8 +37,9 @@ def SetupConnection(sock=None):
     """
     if sock == None:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     
-    sock.setblocking(0)
+    sock.setblocking(1)
     
     try:
         sock.connect((serverAddr,serverPort))
