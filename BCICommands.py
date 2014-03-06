@@ -110,7 +110,6 @@ except:
 
 if initialized:
     print("Initialized")
-    controller.initActionEditor()
             
     controller.initWalking()
     tmp = raw_input('continue: ')
