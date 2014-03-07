@@ -20,9 +20,9 @@ END_PROGRAM_VAL = 0
 
 programRunning = False
 #serverAddr = '172.17.101.2' # Address of the machine sending commands
-#serverAddr = '192.168.0.105' # Address of the machine sending commands
+serverAddr = '192.168.0.105' # Address of the machine sending commands
 #serverAddr = '192.168.0.5'
-serverAddr = '192.168.0.4'
+#serverAddr = '192.168.0.4'
 serverPort = 60000
 
 socketConnected = False
