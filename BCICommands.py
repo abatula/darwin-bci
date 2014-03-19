@@ -9,10 +9,11 @@ sys.path.append('../MotionController')
 
 import MotionController
 
-WALK_FORWARD_TIME = 3
-WALK_BACKWARD_TIME = 4
+WALK_FORWARD_TIME = 2
+WALK_BACKWARD_TIME = 3
 WALK_STEP_SIZE = 10
-TURN_TIME = 3
+TURN_LEFT_TIME = 4
+TURN_RIGHT_TIME = 3
 TURN_STEP_SIZE = 0
 
 END_PROGRAM_VAL = 0
@@ -20,6 +21,8 @@ END_PROGRAM_VAL = 0
 programRunning = False
 #serverAddr = '172.17.101.2' # Address of the machine sending commands
 serverAddr = '192.168.0.105' # Address of the machine sending commands
+#serverAddr = '192.168.0.5'
+#serverAddr = '192.168.0.4'
 serverPort = 60000
 
 socketConnected = False
@@ -90,11 +93,11 @@ def MoveBackward(controller):
     
 def TurnRight(controller):
     "Turn 90 degress to the right"
-    controller.walk(TURN_TIME, -25, TURN_STEP_SIZE)
+    controller.walk(TURN_RIGHT_TIME, -25, TURN_STEP_SIZE)
     
 def TurnLeft(controller):
     "Turn 90 degrees to the left"
-    controller.walk(TURN_TIME, 14, TURN_STEP_SIZE)
+    controller.walk(TURN_LEFT_TIME, 14, TURN_STEP_SIZE)
 
 controller = MotionController.PyMotionController()
 
@@ -107,7 +110,6 @@ except:
 
 if initialized:
     print("Initialized")
-    controller.initActionEditor()
             
     controller.initWalking()
     tmp = raw_input('continue: ')
